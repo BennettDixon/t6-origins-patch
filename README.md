@@ -4,6 +4,8 @@ Fixes crashes, freezes, and instability on the Origins (zm_tomb) map in Call of 
 
 This is a focused release covering Origins and core script fixes. A broader all-maps patch is planned separately.
 
+> **Early release.** This is the first public version of the patch. The core fixes (entity leaks, infinite loops, staff bugs, etc.) have been tested and are stable, but the diagnostic tooling and HUD overlays are still rough. Expect some quirks — if you run into issues, please open an issue or pull request. The actual gameplay fixes should work without problems; it's the dev-facing tooling that may have edges.
+
 ## What This Fixes
 
 ### Staff Weapon Fixes
@@ -32,6 +34,47 @@ This is a focused release covering Origins and core script fixes. A broader all-
 | EL-01 | `_zm_utility.gsc` | `lerp()` leaks a `script_origin` entity every zombie death mid-animation |
 | IL-01 | `_zm_weapons.gsc` | `has_attachment()` missing `idx++` — infinite loop freeze |
 | IL-02 | `_zm_weapons.gsc` | `random_attachment()` unbounded `while(true)` loop |
+
+## How the Two Patch Layers Work
+
+This mod has two separate layers that fix different classes of bugs using different mechanisms. Both are needed for full coverage.
+
+### Fastfile overrides (`mod.ff`)
+
+The `.ff` file contains patched versions of 9 original game scripts. When loaded as a mod, these replace the buggy originals at the engine level. This is the only way to fix bugs that live inside the base game's compiled scripts — addon scripts can't override functions that are already linked at compile time.
+
+**What it fixes:** Entity leaks in `lerp()`, infinite loops in `has_attachment()` and `random_attachment()`, all Origins-specific bugs (staff weapons, generators, robots, tank, float precision).
+
+### Addon scripts (`scripts/`)
+
+These are standalone GSC scripts loaded by Plutonium's script injection system alongside the game. They can hook into game events, add new logic, and monitor/clamp runtime values — but they can't replace existing compiled functions.
+
+**What it fixes:**
+
+| ID | Bug | Fix | Effect |
+|----|-----|-----|--------|
+| EL-02/03 | Zombie `anchor` entity leaks on spawn/rise — if a zombie dies during its ~50ms positioning window, the `script_origin` is never deleted | Death watchdog: on zombie death, deletes `self.anchor` if still defined | Prevents the primary source of entity exhaustion crashes at high rounds |
+| OF-02 | `player.score_total` wraps past int32 max → powerup drop condition becomes permanently false | Clamps `score_total` at 999,999,999 (configurable via `hrp_score_cap`) | Powerup drops keep working past round 150+ |
+| OF-03 | `zombie_powerup_drop_increment` grows at 1.14x per drop, eventually hitting float precision limits | Caps the increment at 50,000 (configurable via `hrp_drop_inc_cap`) | Drop distance stays sane instead of becoming infinite |
+| SA-08 | `self.hitsthismag[weapon]` accumulates a stale entry for every unique weapon string ever held — 40-80+ per player from box cycling | At round start, rebuilds the array keeping only currently-held weapons | Frees hundreds of scrVar slots per round |
+| SA-09 | `self.pack_a_punch_weapon_options[weapon]` caches camo/reticle options per unique PaP weapon, never cleared | Cleared at round start; repopulated lazily on next PaP access | Prevents scrVar exhaustion crash ("exceeded maximum number of child server script variables") |
+
+All modules are individually toggleable via dvars:
+
+| Dvar | Controls | Default |
+|------|----------|---------|
+| `hrp_entity_leaks` | EL-02/03 anchor watchdog | `1` (on) |
+| `hrp_overflow` | OF-02/03 overflow clamps | `1` (on) |
+| `hrp_scrvar` | SA-08/09 scrVar pruning | `1` (on) |
+| `hrp_hud` | HRP status HUD overlay | `0` (off) |
+| `hrp_score_cap` | Score ceiling for OF-02 | `999999999` |
+| `hrp_drop_inc_cap` | Drop increment ceiling for OF-03 | `50000` |
+
+**What it also provides:** The HRP status HUD, diagnostics overlay, and stress-testing console commands.
+
+### Why both are needed
+
+Some bugs (like the `lerp()` entity leak) can only be fixed by replacing the original function in the `.ff` — no addon script can intercept it. Other bugs (like score overflow) are easier to fix with a lightweight runtime clamp that doesn't require replacing an entire game script. The two layers complement each other.
 
 ## Installation (Pre-built)
 
