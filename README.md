@@ -82,6 +82,71 @@ research/         Methodology, findings, test results
 blog/             Blog series about the project
 ```
 
+## Useful Plutonium Dvars
+
+These are built-in Plutonium/engine dvars — not part of this mod. They're reliable and useful for debugging, performance tuning, and verifying fixes. Set them in the Plutonium console (`~` key).
+
+### Movement
+
+**Backspeed scale** — adjusts backward/strafe movement speed.
+
+Steam defaults:
+
+```
+player_backSpeedScale 0.7; player_strafeSpeedScale 0.9
+```
+
+Console defaults:
+
+```
+player_backSpeedScale 0.9; player_strafeSpeedScale 1
+```
+
+### Performance
+
+**FPS cap:**
+
+```
+com_maxfps [20-250]
+```
+
+### Lobby
+
+**Minimum players** — prevents the game from starting until X players are connected:
+
+```
+zombies_minplayers [1-8]
+```
+
+**Controller aim assist:**
+
+```
+cg_aimAssistEnabled [0-1]
+```
+
+### Engine Trackers
+
+These display real-time engine resource usage on-screen. Useful for watching the counters that correspond to the bugs this mod fixes.
+
+| Dvar | What it tracks | Related bug |
+|------|---------------|-------------|
+| `cg_drawMemUsage 1` | Memory usage (hunk allocation) | Hunk error crashes |
+| `cg_drawAnimInfo 1` | Anim info table slots | GR-05 robot walk leak |
+| `cg_drawEntityUsage 1` | Entity pool usage | EL-01/02/03 entity leaks |
+| `cg_drawScriptUsage 1` | Script variable slots (child & parent) | SA-08/09 scrVar accumulation |
+| `cg_drawStringUsage 1` | Config string table usage | Memtree / string overflow |
+| `cg_drawReset 1` | Server reset timer | — |
+
+### Anticheat / Integrity
+
+| Dvar | Description |
+|------|-------------|
+| `cg_drawChecksums 1` | Show loaded script checksums |
+| `cg_flashScriptHashes 1` | Automatic checksum flash |
+| `cg_drawIdentifier 1` | Show game session identifier |
+
+---
+
 ## Diagnostic & Testing Tools
 
 The addon scripts include diagnostic and stress-testing tools that run via Plutonium's developer console. These are the same tools used internally to find and verify the bugs documented in this project. We're releasing them as-is so players can test the fixes, reproduce the original bugs, skip to high rounds, and give themselves weapons for experimentation.
