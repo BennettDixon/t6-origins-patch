@@ -84,9 +84,9 @@ blog/             Blog series about the project
 
 ## Diagnostic & Testing Tools
 
-The addon scripts include diagnostic and stress-testing tools that run via Plutonium's developer console. These are the same tools used to find and verify the bugs documented in this project. They can be useful for testing the fixes yourself or just messing around on Origins.
+The addon scripts include diagnostic and stress-testing tools that run via Plutonium's developer console. These are the same tools used internally to find and verify the bugs documented in this project. We're releasing them as-is so players can test the fixes, reproduce the original bugs, skip to high rounds, and give themselves weapons for experimentation.
 
-> **Note:** These tools were built for internal testing and can be a bit rough around the edges. Staff-giving commands in particular may not perfectly replicate the full in-game crafting flow — ammo counts, upgrade states, or visual effects may not match a legitimately-crafted staff. They work well enough for testing the bug fixes, but don't expect a polished experience.
+> **These tools are experimental and may be buggy.** They were built for internal development and testing, not as a polished player-facing feature. Some commands may not work perfectly in all situations — staff-giving commands in particular skip the normal crafting flow, so ammo counts, upgrade states, or visual effects may not match a legitimately-crafted staff. Round skipping can occasionally leave the game in an odd state. If something breaks, a `map_restart` in the console will reset things. We wanted to include them anyway because they're useful for anyone who wants to verify the fixes or push Origins to its limits.
 
 ### Enabling the HUD
 
@@ -148,26 +148,37 @@ These commands give you upgraded staff weapons directly, bypassing the normal cr
 | `givestaffair` | Give the upgraded Wind Staff (Boreas' Fury) |
 | `givestafflightning` | Give the upgraded Lightning Staff (Kimat's Bite) |
 | `givestaffwater` | Give the upgraded Ice Staff (Ull's Arrow) |
-| `giveallstaffs` | Give all four upgraded staffs at once |
-| `stafflegit` | Skip to R50 + god mode + all staffs (full test setup) |
-
 > **Caveat:** The staff-give commands use `weapon_give()` directly, which doesn't run the full craftable pickup flow. The staffs work for combat testing (firing, AoE, damage) but some cosmetic or state details may differ from a legitimately crafted staff. For example, ammo might not match exactly, or certain visual effects tied to the crafting sequence may not trigger.
 
-#### Bug-Specific Test Commands
+#### Giant Robot Testing
 
-These are more specialized commands used during development to reproduce and verify specific bugs:
+Origins has three giant robots that walk across the map on a timer. The GR-05 bug causes each walk cycle to permanently leak anim info table slots, eventually crashing the game. These commands let you force robot walks and measure whether the leak is fixed.
 
 | Command | Description |
 |---------|-------------|
-| `sa10test` | Give Fire Staff + arm the SA-10 dedup thread counter |
-| `sa10stat` | Print/reset SA-10 blocked-thread count |
-| `mi06test` | Give Wind Staff + arm MI-06 soft-lock detector |
-| `mi06auto` | Automated MI-06 test: kill-to-2, countdown, script-kill zombie[0] |
-| `mi06stat` | Print/reset MI-06 redirect-saved count |
-| `freezeround` | Freeze the round (zombies stop spawning) |
-| `thawround` | Resume the round |
+| `roboforce` | Force a three-robot round (advances round to next multiple of 4) |
+| `roboforce1` | Trigger a single-robot walk on the next cycle |
+| `robosoak <N>` | Run N sequential single-robot walks and report each one |
+| `animrobotleak` | Measure anim info entries leaked by one robot walk cycle |
+| `animrobotleak <N>` | Measure leak over N consecutive walk cycles (cumulative) |
+| `animrobotwatch` | Start a passive background watcher that probes after every walk automatically |
+| `animrobotstat` | Print current watcher state (walks completed, headroom, total leaked) |
+| `animrobotstop` | Stop the background watcher |
+| `freezeround` | Freeze zombie spawning (useful for isolating robot walks from combat) |
+| `thawround` | Resume zombie spawning |
 
-Run `set st_cmd help` in-game for the full list of commands.
+**Typical workflow to verify GR-05 is patched:**
+
+```
+set st_cmd god
+set st_cmd freezeround
+set st_cmd animrobotwatch
+set st_cmd roboforce
+```
+
+Then watch the console output after each walk cycle. With the patch applied, you should see `leaked_this_walk=0` every time. Without the patch, each walk leaks 2 anim info entries (6 per triple-robot round).
+
+Run `set st_cmd help` in-game for the full list of commands, including additional bug-specific test commands for reproducing and verifying individual fixes.
 
 ## Blog Series
 

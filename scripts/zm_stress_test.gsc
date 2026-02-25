@@ -110,10 +110,6 @@ st_command_listener()
             player thread st_cmd_givestafflightning();
         else if (cmd == "givestaffwater")
             player thread st_cmd_givestaffwater();
-        else if (cmd == "giveallstaffs")
-            player thread st_cmd_giveallstaffs();
-        else if (cmd == "stafflegit")
-            player thread st_cmd_stafflegit();
         else if (cmd == "sa10test")
             player thread st_cmd_sa10test();
         else if (cmd == "sa10stat")
@@ -634,10 +630,6 @@ st_cmd_help()
     iprintln("^2givestafflightning^7- give upgraded Lightning Staff with ammo (zm_origins only)");
     wait 0.1;
     iprintln("^2givestaffwater    ^7- give upgraded Water/Ice Staff with ammo (zm_origins only)");
-    wait 0.1;
-    iprintln("^2giveallstaffs     ^7- give all four upgraded staves at once (zm_origins only)");
-    wait 0.1;
-    iprintln("^2stafflegit        ^7- skip R50 + god + all staves + print expected behavior for each");
     wait 0.1;
     iprintln("^2sa10test    ^7- give fire staff + arm SA-10 dedup counter (zm_origins only)");
     wait 0.1;
@@ -2171,59 +2163,6 @@ st_cmd_givestaffwater()
 {
     self st_cmd_give_upgraded_staff("staff_water_upgraded_zm",
         "HOLD fire to charge, release for ice-prison AoE.");
-}
-
-// Give all four upgraded staves + zombie shield at once.
-// Only one staff can be the active weapon, but all four sit in the primary
-// weapon slots so you can cycle between them with the weapon switch bind.
-// Note: plain giveweapon does not enforce the normal 2-primary slot limit,
-// so all four staves coexist in inventory.
-st_cmd_giveallstaffs()
-{
-    self giveweapon("staff_revive_zm");
-    self st_cmd_give_upgraded_staff("staff_fire_upgraded_zm", undefined);
-    self st_cmd_give_upgraded_staff("staff_air_upgraded_zm", undefined);
-    self st_cmd_give_upgraded_staff("staff_lightning_upgraded_zm", undefined);
-    self st_cmd_give_upgraded_staff("staff_water_upgraded_zm", undefined);
-    iprintln("^2[ST] All four upgraded staves given.");
-    iprintln("^7[ST] Cycle with weapon switch. HOLD fire on each to charge.");
-    logprint("[ST] giveallstaffs: all four upgraded staves given\n");
-}
-
-// Legitimacy check: skip to R50, enable god mode, give all four staves, and
-// print what to fire and what to expect for each one. All staff behavior is
-// registered at onplayerconnect — not during weapon pickup — so staves given
-// via giveweapon are functionally identical to naturally crafted ones.
-//
-// Expected behavior at R50+:
-//   Fire   — AoE fireball: zombies ignite and burn. Single-target instant kill
-//             on direct hit. With SA-10 patched, each zombie gets exactly one
-//             burn thread — no stacked ticks, normal kill speed.
-//   Wind   — Charged shot: whirlwind anchors to nearest alive zombie and pulls
-//             the horde inward. With MI-06 patched, anchors correctly even when
-//             zombie[0] in the sorted array is dead.
-//   Lightning — Charged shot: bolt chains between zombies, killing whole groups
-//             in one discharge at R50+.
-//   Water  — Charged shot: ice-prison encases nearby zombies, then shatters.
-//             Reliable crowd-freeze + mass kill at high rounds.
-st_cmd_stafflegit()
-{
-    iprintln("^3[ST] stafflegit: skipping to R50, enabling god mode, giving all staves...");
-    level thread st_cmd_skip(50);
-    self thread st_cmd_god();
-    wait 0.5; // let skip arm before giving weapons
-    self st_cmd_giveallstaffs();
-
-    wait 0.2;
-    iprintln("^7[ST] --- STAFF LEGITIMACY GUIDE ---");
-    iprintln("^2[ST] Fire  ^7CHARGE shot → ignites horde. Deals fixed ~24k dmg (20k impact + DOT).");
-    iprintln("^7[ST]        NOT a high-round killer — fire staff has fixed damage by design.");
-    iprintln("^7[ST]        Unpatched SA-10 stacked 25 impact hits (500k) making it appear to scale.");
-    iprintln("^2[ST] Wind  ^7CHARGE shot → whirlwind anchors to nearest alive zombie, pulls horde.");
-    iprintln("^2[ST] Elec  ^7CHARGE shot → chain bolt, high fixed damage, good to ~R80.");
-    iprintln("^2[ST] Water ^7CHARGE shot → blizzard deals self.health damage (true insta-kill any round).");
-    iprintln("^7[ST] Only Water scales infinitely. Fire/Wind/Elec are mid-game weapons by design.");
-    logprint("[ST] stafflegit: skip=50 god=1 all staves given\n");
 }
 
 // --- SA-10 / MI-06 AUTOMATED TESTS ---

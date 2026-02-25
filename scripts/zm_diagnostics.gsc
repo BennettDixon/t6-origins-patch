@@ -62,13 +62,9 @@ on_player_spawned()
     {
         self waittill("spawned_player");
 
-        // Auto-enable god mode so testing isn't interrupted by zombie hits.
-        self enableinvulnerability();
-
         if (!isdefined(self._diag_hud_init))
         {
             self._diag_hud_init = 1;
-            iprintln("^2[DIAG] God mode auto-enabled for " + self.name);
 
             if (getDvar("diag_hud") == "1")
             {
