@@ -1,0 +1,30 @@
+>game,T6
+>name,mod
+
+// Origins High-Round Patch — FF-layer script overrides
+//
+// Core overrides (affect all maps, including Origins):
+//   IL-01  _zm_weapons.gsc   has_attachment() missing idx++ (infinite loop fix)
+//   IL-02  _zm_weapons.gsc   random_attachment() bounded loop
+//   EL-01  _zm_utility.gsc   lerp() entity leak (_lerp_link cleanup)
+//
+// Origins-specific overrides:
+//   SA-10            _zm_weap_staff_fire.gsc    Fire Staff AoE self→e_target.is_on_fire fix
+//   MI-06            _zm_weap_staff_air.gsc     Wind Staff source zombie stale index fix
+//   FRZ-02           _zm_weap_staff_water.gsc   level notify("blizzard_ended") diagnostic hook
+//   GEN-ZC-01/02/03  zm_tomb_capture_zones.gsc  Generator spawn limiter + cleanup fixes
+//   GR-05            zm_tomb_giant_robot.gsc    stopanimscripted() between walk segments (anim info leak)
+//   TANK-EL-01       zm_tomb_tank.gsc           run-over linker entity leak on disconnect
+//   TANK-TL-01       zm_tomb_tank.gsc           push-player thread leak on disconnect
+//   TANK-MI-01/02/03 zm_tomb_tank.gsc           flamethrower cone dead-var + enemy routing + O(n) poll
+//   FRZ-01           zm_tomb_utility.gsc        _kill_zombie_network_safe_internal +128 float32 fix
+
+script,maps/mp/zombies/_zm_weapons.gsc
+script,maps/mp/zombies/_zm_utility.gsc
+script,maps/mp/zombies/_zm_weap_staff_fire.gsc
+script,maps/mp/zombies/_zm_weap_staff_air.gsc
+script,maps/mp/zombies/_zm_weap_staff_water.gsc
+script,maps/mp/zm_tomb_capture_zones.gsc
+script,maps/mp/zm_tomb_giant_robot.gsc
+script,maps/mp/zm_tomb_tank.gsc
+script,maps/mp/zm_tomb_utility.gsc
