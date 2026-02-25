@@ -82,6 +82,93 @@ research/         Methodology, findings, test results
 blog/             Blog series about the project
 ```
 
+## Diagnostic & Testing Tools
+
+The addon scripts include diagnostic and stress-testing tools that run via Plutonium's developer console. These are the same tools used to find and verify the bugs documented in this project. They can be useful for testing the fixes yourself or just messing around on Origins.
+
+> **Note:** These tools were built for internal testing and can be a bit rough around the edges. Staff-giving commands in particular may not perfectly replicate the full in-game crafting flow — ammo counts, upgrade states, or visual effects may not match a legitimately-crafted staff. They work well enough for testing the bug fixes, but don't expect a polished experience.
+
+### Enabling the HUD
+
+The diagnostic HUD overlay is **off by default**. To enable it, run this in the Plutonium console (`~` key) **before** loading a map:
+
+```
+set diag_hud 1
+```
+
+This shows a live overlay with entity headroom, round number, zombie health, kill counts, and other internal counters. The HRP status indicator (patch telemetry) can be enabled independently:
+
+```
+set hrp_hud 1
+```
+
+### Console Commands
+
+All commands are entered via the Plutonium console. The general pattern is:
+
+```
+set st_cmd <command>
+set st_cmd "skip 50"          // command with argument (use quotes)
+```
+
+Or for two-part commands:
+
+```
+set st_arg 50
+set st_cmd skip
+```
+
+#### General
+
+| Command | Description |
+|---------|-------------|
+| `help` | Print all available commands in-game |
+| `god` | Toggle god mode (invulnerability) |
+| `perks` | Give Juggernog, Quick Revive, Speed Cola, Stamin-Up |
+| `kill` | Kill all zombies on the map |
+| `status` | Print current game state (round, entities, counters) |
+| `openmap` | Force-open all doors and clear all debris |
+
+#### Round Control
+
+| Command | Description |
+|---------|-------------|
+| `skip <N>` | Instant jump to round N (kills current zombies, sets round number) |
+| `ramp <N>` | Step to round N one round at a time with a 3s gap between each |
+| `score <N>` | Set player score (default 250,000 if no argument) |
+| `health <N>` | Set zombie health to N |
+
+#### Origins Staffs
+
+These commands give you upgraded staff weapons directly, bypassing the normal crafting/Easter Egg process. Useful for testing the SA-10, MI-06, and FRZ fixes without playing through 20+ rounds of setup.
+
+| Command | Description |
+|---------|-------------|
+| `givestafffire` | Give the upgraded Fire Staff (Kagutsuchi's Blood) |
+| `givestaffair` | Give the upgraded Wind Staff (Boreas' Fury) |
+| `givestafflightning` | Give the upgraded Lightning Staff (Kimat's Bite) |
+| `givestaffwater` | Give the upgraded Ice Staff (Ull's Arrow) |
+| `giveallstaffs` | Give all four upgraded staffs at once |
+| `stafflegit` | Skip to R50 + god mode + all staffs (full test setup) |
+
+> **Caveat:** The staff-give commands use `weapon_give()` directly, which doesn't run the full craftable pickup flow. The staffs work for combat testing (firing, AoE, damage) but some cosmetic or state details may differ from a legitimately crafted staff. For example, ammo might not match exactly, or certain visual effects tied to the crafting sequence may not trigger.
+
+#### Bug-Specific Test Commands
+
+These are more specialized commands used during development to reproduce and verify specific bugs:
+
+| Command | Description |
+|---------|-------------|
+| `sa10test` | Give Fire Staff + arm the SA-10 dedup thread counter |
+| `sa10stat` | Print/reset SA-10 blocked-thread count |
+| `mi06test` | Give Wind Staff + arm MI-06 soft-lock detector |
+| `mi06auto` | Automated MI-06 test: kill-to-2, countdown, script-kill zombie[0] |
+| `mi06stat` | Print/reset MI-06 redirect-saved count |
+| `freezeround` | Freeze the round (zombies stop spawning) |
+| `thawround` | Resume the round |
+
+Run `set st_cmd help` in-game for the full list of commands.
+
 ## Blog Series
 
 This project is documented in a narrative blog series covering the archaeology, analysis, and patching process:
