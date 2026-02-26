@@ -1,5 +1,9 @@
 # BO2 Origins High-Round Fix
 
+[Video Documentary](https://www.youtube.com/watch?v=tvga3cXQcso&feature=youtu.be) on Origins Staff fixes
+
+[Float32 Visualizer](https://bennettdixon.dev/tools/float32-visualizer)
+
 Fixes crashes, freezes, and instability on the Origins (zm_tomb) map in Call of Duty: Black Ops 2 Zombies during high-round play (round 100+). Designed for use with the [Plutonium T6](https://plutonium.pw/) client.
 
 This is a focused release covering Origins and core script fixes. A broader all-maps patch is planned separately.
